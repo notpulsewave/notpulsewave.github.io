@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Studio Messages</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      display: flex;
+      height: 100vh;
+      background: #f2f2f7;
+    }
+
+    #sidebar {
+      width: 260px;
+      background: #ffffff;
+      border-right: 1px solid #ccc;
+      padding: 10px;
+      overflow-y: auto;
+      transition: width 0.25s ease, padding 0.25s ease, opacity 0.25s ease;
+    }
+
+    #sidebar.hidden {
+      width: 0;
+      padding: 0;
+      overflow: hidden;
+      border-right: none;
+      opacity: 0;
+    }
+
+    #chatPanel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #e5e5ea;
+      position: relative;
+    }
+
+    #toggleSidebarBtn {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 10;
+      border: none;
+      background: #ffffff;
+      color: #333;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+    }
+
+    #chatHeader {
+      padding: 12px 15px;
+      background: #ffffff;
+      border-bottom: 1px solid #ccc;
+      font-weight: bold;
+      padding-left: 70px;
+    }
+
+    #roomOnlineUsers,
+    #typingIndicator {
+      font-weight: normal;
+      font-size: 13px;
+      color: #666;
+      margin-top: 4px;
+    }
+
+    #messages {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+    }
+
+    .bubble {
+      max-width: 70%;
+      padding: 10px 15px;
+      margin: 8px 0;
+      border-radius: 20px;
+      display: inline-block;
+      clear: both;
+      word-wrap: break-word;
+      position: relative;
+    }
+
+    .me {
+      background: #007aff;
+      color: white;
+      float: right;
+      text-align: right;
+    }
+
+    .other {
+      background: #ffffff;
+      color: black;
+      float: left;
+      text-align: left;
+    }
+
+    .system {
+      background: #f0f0f0;
+      color: #555;
+      width: 100%;
+      text-align: center;
+      font-style: italic;
+      cursor: default;
+    }
+
+    .time {
+      display: block;
+      font-size: 11px;
+      opacity: 0.7;
+      margin-top: 5px;
+    }
+
+    .reply-box {
+      font-size: 12px;
+      opacity: 0.85;
+      margin-bottom: 6px;
+      padding-left: 8px;
+      border-left: 3px solid rgba(0,0,0,0.2);
+    }
+
+    .like-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 6px;
+      font-size: 13px;
+      opacity: 0.95;
+    }
+
+    .like-btn {
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 16px;
+      padding: 0;
+      line-height: 1;
+      color: inherit;
+    }
+
+    .liked {
+      font-weight: bold;
+    }
+
+    #inputBar {
+      display: flex;
+      padding: 10px;
+      background: #ffffff;
+      border-top: 1px solid #ccc;
+    }
+
+    #inputBar input {
+      flex: 1;
+      padding: 10px;
+      border-radius: 20px;
+      border: 1px solid #ccc;
+      margin-right: 10px;
+    }
+
+    #inputBar button {
+      padding: 10px 20px;
+      border-radius: 20px;
+      border: none;
+      background: #007aff;
+      color: white;
+      cursor: pointer;
+    }
+
+    #loginBox {
+      position: absolute;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    #loginBox input {
+      padding: 10px;
+      width: 200px;
+      margin-bottom: 10px;
+    }
+
+    #loginBox button {
+      padding: 10px;
+      width: 100%;
+      background: #007aff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+    }
+
+    .room {
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+    }
+
+    .room:hover {
+      background: #f9f9f9;
+    }
+
+    .online-user {
+      padding: 8px 10px;
+      border-bottom: 1px solid #eee;
+      color: #333;
+      font-size: 14px;
+    }
+
+    .online-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: #34c759;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+
+    .typing {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 13px;
+      color: #666;
+      margin-top: 4px;
+    }
+
+    .typing span {
+      width: 6px;
+      height: 6px;
+      background: #888;
+      border-radius: 50%;
+      animation: bounce 1.2s infinite ease-in-out;
+    }
+
+    .typing span:nth-child(2) { animation-delay: 0.15s; }
+    .typing span:nth-child(3) { animation-delay: 0.3s; }
+
+    @keyframes bounce {
+      0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+      40% { transform: translateY(-5px); opacity: 1; }
+    }
+
+    #replyPreview {
+      display: none;
+      padding: 8px 10px;
+      background: #f0f0f0;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div id="loginBox">
+    <input id="emailInput" placeholder="Email">
+    <input id="passwordInput" type="password" placeholder="Password">
+    <button onclick="loginUser()">Login</button>
+  </div>
+
+  <div id="sidebar" style="display:none">
+    <h3>Chats</h3>
+    <input id="newRoomInput" placeholder="New room name">
+    <input id="newRoomPassword" placeholder="Set password">
+    <button onclick="createRoom()">➕ Create</button>
+    <div id="roomList"></div>
+
+    <h3>Online in room</h3>
+    <div id="onlineUsers"></div>
+  </div>
+
+  <div id="chatPanel" style="display:none">
+    <button id="toggleSidebarBtn" onclick="toggleSidebar()">☰</button>
+    <div id="chatHeader">
+      <div>Select a room</div>
+      <div id="roomOnlineUsers"></div>
+      <div id="typingIndicator"></div>
+    </div>
+    <div id="messages"></div>
+    <div id="inputBar">
+      <div style="width:100%;">
+        <div id="replyPreview"></div>
+        <div style="display:flex;">
+          <input id="textInput" placeholder="Type a message">
+          <button onclick="sendMessage()">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyB6O92te-5OA2LTZwy-vg1dN86r44N4U94",
+      authDomain: "school-link-58511.firebaseapp.com",
+      databaseURL: "https://school-link-58511-default-rtdb.firebaseio.com",
+      projectId: "school-link-58511",
+      storageBucket: "school-link-58511.firebasestorage.app",
+      messagingSenderId: "563736666527",
+      appId: "1:563736666527:web:54cf0509f8a64bdcb3ddaa"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+
+    let username = "";
+    let uid = "";
+    let currentRoom = "";
+    let messagesRef = null;
+    let typingRef = null;
+    let typingTimer = null;
+    let replyingTo = null;
+
+    function formatTime(timestamp) {
+      if (!timestamp) return "";
+      return new Date(timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    }
+
+    function requestNotificationPermission() {
+      if (!("Notification" in window)) return;
+      Notification.requestPermission();
+    }
+
+    function showNotification(title, body) {
+      if (Notification.permission === "granted") {
+        new Notification(title, { body });
+      }
+    }
+
+    function toggleSidebar() {
+      document.getElementById("sidebar").classList.toggle("hidden");
+    }
+
+    function loginUser() {
+      const email = document.getElementById("emailInput").value.trim();
+      const password = document.getElementById("passwordInput").value.trim();
+
+      if (!email || !password) {
+        alert("Email and password are required!");
+        return;
+      }
+
+      auth.signInWithEmailAndPassword(email, password)
+        .then(userCredential => {
+          uid = userCredential.user.uid;
+          return db.ref(`userProfiles/${uid}/name`).once("value");
+        })
+        .then(snapshot => {
+          username = snapshot.val();
+          if (!username) throw new Error("Display name not found.");
+
+          document.getElementById("loginBox").style.display = "none";
+          document.getElementById("sidebar").style.display = "block";
+          document.getElementById("chatPanel").style.display = "flex";
+
+          loadRooms();
+          requestNotificationPermission();
+        })
+        .catch(error => {
+          console.error(error);
+          alert("Login failed: " + error.message);
+        });
+    }
+
+    function createRoom() {
+      const roomName = document.getElementById("newRoomInput").value.trim().toLowerCase();
+      const password = document.getElementById("newRoomPassword").value.trim();
+
+      if (!roomName || !password) {
+        alert("Please enter both a room name and password.");
+        return;
+      }
+
+      db.ref(`rooms/${roomName}`).push({
+        system: true,
+        text: `${username} created the room.`,
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+      }).then(() => {
+        return db.ref(`roomPasswords/${roomName}`).set(password);
+      }).then(() => {
+        document.getElementById("newRoomInput").value = "";
+        document.getElementById("newRoomPassword").value = "";
+        loadRooms();
+      }).catch(error => {
+        console.error(error);
+        alert("Failed to create room.");
+      });
+    }
+
+    function loadRooms() {
+      const roomList = document.getElementById("roomList");
+      roomList.innerHTML = "";
+
+      db.ref("rooms").once("value", snapshot => {
+        const rooms = snapshot.val();
+        if (!rooms) return;
+
+        Object.keys(rooms).forEach(room => {
+          const div = document.createElement("div");
+          div.className = "room";
+          div.textContent = room;
+          div.onclick = () => promptPassword(room);
+          roomList.appendChild(div);
+        });
+      });
+    }
+
+    function promptPassword(roomName) {
+      db.ref(`roomPasswords/${roomName}`).once("value", snapshot => {
+        const storedPassword = snapshot.val();
+        if (!storedPassword) {
+          openRoom(roomName);
+        } else {
+          const entered = prompt(`Enter password for "${roomName}"`);
+          if (entered === storedPassword) openRoom(roomName);
+          else alert("Incorrect password.");
+        }
+      });
+    }
+
+    function setupRoomPresence(roomName) {
+      db.ref(`roomStatus/${roomName}/${uid}`).onDisconnect().remove();
+
+      db.ref(`roomStatus/${roomName}/${uid}`).set({
+        name: username,
+        online: true,
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+      });
+
+      db.ref(`roomStatus/${roomName}`).on("value", snapshot => {
+        const users = snapshot.val() || {};
+        const list = Object.values(users)
+          .filter(u => u && u.online)
+          .map(u => u.name);
+
+        document.getElementById("onlineUsers").innerHTML = list.length
+          ? list.map(name => `<div class="online-user"><span class="online-dot"></span>${name}</div>`).join("")
+          : `<div class="online-user">No one online</div>`;
+
+        document.getElementById("roomOnlineUsers").textContent = list.length
+          ? `Online: ${list.join(", ")}`
+          : `Online: No one`;
+      });
+    }
+
+    function setupTyping(roomName) {
+      if (typingRef) typingRef.off();
+
+      typingRef = db.ref(`typing/${roomName}`);
+
+      typingRef.on("value", snapshot => {
+        const users = snapshot.val() || {};
+        const typingNames = Object.values(users)
+          .filter(u => u && u.name !== username)
+          .map(u => u.name);
+
+        const indicator = document.getElementById("typingIndicator");
+
+        if (typingNames.length === 0) {
+          indicator.innerHTML = "";
+        } else {
+          const nameText = typingNames.length === 1
+            ? `${typingNames[0]} is typing`
+            : `${typingNames.join(", ")} are typing`;
+
+          indicator.innerHTML = `
+            <div class="typing">
+              <span></span><span></span><span></span>
+              <div>${nameText}</div>
+            </div>
+          `;
+        }
+      });
+    }
+
+    function setTyping(isTyping) {
+      if (!currentRoom || !auth.currentUser) return;
+
+      const ref = db.ref(`typing/${currentRoom}/${uid}`);
+      if (isTyping) {
+        ref.set({
+          name: username,
+          timestamp: firebase.database.ServerValue.TIMESTAMP
+        });
+      } else {
+        ref.remove();
+      }
+    }
+
+    function handleTyping() {
+      setTyping(true);
+      clearTimeout(typingTimer);
+      typingTimer = setTimeout(() => setTyping(false), 1500);
+    }
+
+    function setReply(messageId, msg) {
+      replyingTo = {
+        id: messageId,
+        name: msg.name || "Unknown",
+        text: msg.text || ""
+      };
+
+      const preview = document.getElementById("replyPreview");
+      preview.style.display = "block";
+      preview.innerHTML = `
+        <strong>Replying to ${replyingTo.name}:</strong> ${replyingTo.text}
+        <button onclick="clearReply()" style="margin-left:10px; border:none; background:none; color:#007aff; cursor:pointer;">Cancel</button>
+      `;
+    }
+
+    function clearReply() {
+      replyingTo = null;
+      const preview = document.getElementById("replyPreview");
+      preview.style.display = "none";
+      preview.innerHTML = "";
+    }
+
+    function getLikeCount(msg) {
+      return msg.likes ? Object.keys(msg.likes).length : 0;
+    }
+
+    function isLikedByMe(msg) {
+      return !!(msg.likes && msg.likes[uid]);
+    }
+
+    function renderMessage(messageId, msg) {
+      const existing = document.querySelector(`[data-message-id="${messageId}"]`);
+      if (existing) existing.remove();
+
+      const div = document.createElement("div");
+      div.className = "bubble";
+      div.dataset.messageId = messageId;
+
+      if (msg.system) {
+        div.className += " system";
+        div.innerHTML = `${msg.text}${msg.timestamp ? `<span class="time">${formatTime(msg.timestamp)}</span>` : ""}`;
+      } else {
+        div.className += msg.name === username ? " me" : " other";
+
+        let replyHtml = "";
+        if (msg.replyTo) {
+          replyHtml = `
+            <div class="reply-box">
+              Replying to <strong>${msg.replyTo.name}</strong><br>
+              ${msg.replyTo.text}
+            </div>
+          `;
+        }
+
+        const likeCount = getLikeCount(msg);
+        const liked = isLikedByMe(msg);
+
+        div.innerHTML = `
+          ${replyHtml}
+          <div>${msg.name}: ${msg.text}</div>
+          <div class="like-row">
+            <button class="like-btn ${liked ? 'liked' : ''}" onclick="event.stopPropagation(); toggleLike('${messageId}')">
+              ${liked ? "❤️" : "🤍"}
+            </button>
+            <span>${likeCount} like${likeCount === 1 ? "" : "s"}</span>
+          </div>
+          ${msg.timestamp ? `<span class="time">${formatTime(msg.timestamp)}</span>` : ""}
+        `;
+
+        if (msg.name && msg.name !== username) {
+          showNotification(`${msg.name} in ${currentRoom}`, msg.text);
+        }
+
+        div.onclick = () => setReply(messageId, msg);
+      }
+
+      const messages = document.getElementById("messages");
+      messages.appendChild(div);
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    function toggleLike(messageId) {
+      if (!currentRoom || !uid) return;
+
+      const likeRef = db.ref(`rooms/${currentRoom}/${messageId}/likes/${uid}`);
+      likeRef.once("value").then(snapshot => {
+        if (snapshot.exists()) {
+          likeRef.remove();
+        } else {
+          likeRef.set(true);
+        }
+      });
+    }
+
+    function openRoom(roomName) {
+      currentRoom = roomName;
+      document.querySelector("#chatHeader > div").textContent = roomName;
+      document.getElementById("messages").innerHTML = "";
+      document.getElementById("typingIndicator").textContent = "";
+      clearReply();
+
+      if (messagesRef) messagesRef.off();
+      if (typingRef) typingRef.off();
+
+      setupRoomPresence(roomName);
+      setupTyping(roomName);
+
+      messagesRef = db.ref(`rooms/${roomName}`);
+
+      messagesRef.on("child_added", snapshot => {
+        renderMessage(snapshot.key, snapshot.val());
+      });
+
+      messagesRef.on("child_changed", snapshot => {
+        renderMessage(snapshot.key, snapshot.val());
+      });
+    }
+
+    function sendMessage() {
+      const text = document.getElementById("textInput").value.trim();
+      if (!text || !currentRoom) {
+        alert("Please select a room and enter a message.");
+        return;
+      }
+
+      setTyping(false);
+
+      const messageData = {
+        name: username,
+        text: text,
+        timestamp: firebase.database.ServerValue.TIMESTAMP,
+        likes: {}
+      };
+
+      if (replyingTo) {
+        messageData.replyTo = {
+          id: replyingTo.id,
+          name: replyingTo.name,
+          text: replyingTo.text
+        };
+      }
+
+      db.ref(`rooms/${currentRoom}`).push(messageData).then(() => {
+        document.getElementById("textInput").value = "";
+        clearReply();
+      }).catch(error => {
+        console.error(error);
+        alert("Failed to send message.");
+      });
+    }
+
+    const textInput = document.getElementById("textInput");
+    textInput.addEventListener("input", handleTyping);
+    textInput.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        setTyping(false);
+        sendMessage();
+      }
+    });
+
+    window.addEventListener("beforeunload", () => {
+      setTyping(false);
+    });
+  </script>
+</body>
+</html>
