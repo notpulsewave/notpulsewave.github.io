@@ -11,7 +11,6 @@
       --text: #f4f8f1;
       --muted: #d4e3d2;
       --accent: #7ee081;
-      --shadow: rgba(0, 0, 0, 0.35);
     }
 
     * { box-sizing: border-box; }
@@ -19,140 +18,188 @@
     body {
       margin: 0;
       min-height: 100vh;
-      font-family: Arial, Helvetica, sans-serif;
+      font-family: 'Segoe UI', Arial, sans-serif;
       color: var(--text);
-      background:
-        linear-gradient(rgba(0,0,0,0.18), rgba(0,0,0,0.18)),
-        linear-gradient(135deg, var(--bg1), var(--bg2));
-      display: grid;
-      place-items: center;
-      padding: 24px;
-      overflow-x: hidden;
-    }
-
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-      background-size: 42px 42px;
-      opacity: 0.35;
-      pointer-events: none;
+      background: linear-gradient(135deg, var(--bg1), var(--bg2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
     }
 
     .container {
-      position: relative;
-      z-index: 1;
       width: 100%;
       max-width: 1100px;
-      border-radius: 24px;
+      border-radius: 20px;
       overflow: hidden;
-      background: rgba(34, 52, 37, 0.82);
-      border: 2px solid rgba(255,255,255,0.12);
-      box-shadow: 0 24px 70px var(--shadow);
-      backdrop-filter: blur(10px);
+      background: rgba(30, 45, 32, 0.95);
+      border: 1px solid rgba(126, 224, 129, 0.2);
+      box-shadow: 0 30px 80px rgba(0,0,0,0.45);
     }
 
     .topbar {
-      height: 18px;
-      background: linear-gradient(90deg, #3b6f45 0 25%, #4f8a55 25% 50%, #6aac67 50% 75%, #8dcf84 75% 100%);
+      height: 6px;
+      background: linear-gradient(to right, #7ee081, #4f9c53);
     }
 
     .hero {
-      padding: 56px 32px 24px;
+      padding: 50px 40px 30px;
       text-align: center;
-      background:
-        radial-gradient(circle at top, rgba(126, 224, 129, 0.18), transparent 40%),
-        linear-gradient(180deg, rgba(255,255,255,0.03), transparent);
+      background: rgba(255,255,255,0.03);
     }
 
     .badge {
       display: inline-block;
-      padding: 8px 14px;
+      padding: 6px 16px;
       border-radius: 999px;
-      background: rgba(126, 224, 129, 0.14);
-      border: 1px solid rgba(126, 224, 129, 0.25);
+      background: rgba(126, 224, 129, 0.12);
+      border: 1px solid rgba(126, 224, 129, 0.3);
       color: var(--accent);
-      font-weight: 700;
-      font-size: 0.8rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      margin-bottom: 18px;
+      font-weight: 600;
+      font-size: 0.75rem;
+      letter-spacing: 1.5px;
+      margin-bottom: 16px;
     }
 
     h1 {
-      margin: 0 0 12px;
-      font-size: clamp(2.6rem, 6vw, 5rem);
-      line-height: 0.95;
-      font-family: "Courier New", monospace;
-      letter-spacing: 0.04em;
-      text-shadow: 4px 4px 0 rgba(0,0,0,0.22);
+      margin: 0 0 10px;
+      font-size: clamp(2.8rem, 7vw, 5.2rem);
+      font-weight: 800;
+      letter-spacing: -2px;
     }
 
     .subtitle {
+      max-width: 520px;
       margin: 0 auto;
-      max-width: 780px;
       color: var(--muted);
-      font-size: 1.04rem;
-      line-height: 1.7;
+      font-size: 1.05rem;
+      line-height: 1.6;
     }
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 16px;
-      padding: 28px 32px 34px;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 14px;
+      padding: 30px 40px 40px;
     }
 
     .game-link {
       text-decoration: none;
       color: inherit;
-      display: block;
       background: rgba(255,255,255,0.06);
       border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 18px;
-      padding: 18px;
-      transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
-      box-shadow: 0 6px 0 rgba(0,0,0,0.18);
+      border-radius: 16px;
+      padding: 20px;
+      transition: all 0.2s ease;
     }
 
     .game-link:hover {
-      transform: translateY(-3px);
-      background: rgba(255,255,255,0.09);
-      box-shadow: 0 10px 0 rgba(0,0,0,0.24);
+      transform: translateY(-4px);
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(126, 224, 129, 0.3);
     }
 
     .game-link h2 {
       margin: 0 0 8px;
       font-size: 1.15rem;
+      color: #c8f0c8;
     }
 
     .game-link p {
       margin: 0;
       color: var(--muted);
-      line-height: 1.5;
       font-size: 0.95rem;
+      line-height: 1.5;
     }
 
     .bottom {
-      padding: 0 32px 28px;
+      padding: 18px 40px;
       text-align: center;
-      color: rgba(255,255,255,0.7);
-      font-size: 0.92rem;
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.55);
+      background: rgba(0,0,0,0.15);
+    }
+
+    /* Password Screen */
+    #password-screen {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, #1b2e1f, #2f5b36);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    .password-box {
+      background: rgba(30, 45, 32, 0.95);
+      padding: 40px 50px;
+      border-radius: 20px;
+      border: 1px solid rgba(126, 224, 129, 0.2);
+      box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+      text-align: center;
+      width: 100%;
+      max-width: 380px;
+    }
+
+    .password-box h2 {
+      margin: 0 0 24px;
+      font-size: 1.6rem;
+    }
+
+    .password-box input {
+      width: 100%;
+      padding: 14px 18px;
+      font-size: 1.05rem;
+      border: 2px solid rgba(126, 224, 129, 0.3);
+      border-radius: 10px;
+      background: #1b2e1f;
+      color: var(--text);
+      margin-bottom: 16px;
+      outline: none;
+    }
+
+    .password-box button {
+      width: 100%;
+      padding: 14px;
+      font-weight: 700;
+      border-radius: 10px;
+      background: #7ee081;
+      color: #1a2f1f;
+      border: none;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    .error {
+      color: #ff8a8a;
+      font-size: 0.85rem;
+      margin-top: 8px;
+      display: none;
     }
   </style>
 </head>
 <body>
-  <main class="container">
+
+  <!-- Password Screen -->
+  <div id="password-screen">
+    <div class="password-box">
+      <h2>Enter Password</h2>
+      <input type="password" id="password-input" placeholder="Password">
+      <button onclick="checkPassword()">Unlock</button>
+      <p class="error" id="error-msg">Incorrect password</p>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <main class="container" id="main-content" style="display: none;">
     <div class="topbar"></div>
 
     <section class="hero">
-      <div class="badge">Minecraft Versions</div>
+      <div class="badge">MINECRAFT VERSIONS</div>
       <h1>PulseWave</h1>
       <p class="subtitle">
-        Choose a Minecraft version to play. Each button links to a separate file.
+        Choose a Minecraft version to play.
       </p>
     </section>
 
@@ -167,79 +214,65 @@
         <p>Great for mini-games, building, and modded fun.</p>
       </a>
 
-      
       <a class="game-link" href="Eaglercraft_IR_Z1.11.html">
         <h2>Z 1.11</h2>
         <p>No description available. Go Explore!</p>
       </a>
-
 
       <a class="game-link" href="Eaglercraft_IR_a1.2.6.html">
         <h2>Alpha 1.2.6</h2>
         <p>No description available. Go Explore!</p>
       </a>
 
-
       <a class="game-link" href="Eaglercraft_IR_1.8.8wasm.html">
         <h2>Eaglercraft 1.8</h2>
         <p>Default Eaglercraft 1.8 wasm Client!</p>
       </a>
 
-
       <a class="game-link" href="Eaglercraft_IR_1.12.2wasm.html">
         <h2>Eaglercraft 1.12</h2>
-        <p>Default Eaglercraft 1.12 wasm Client! (Slightly Changed)</p>
+        <p>Default Eaglercraft 1.12 wasm Client!</p>
       </a>
 
-
-      <a class="game-link" href="
-EB Client Lite CU2 Offline.html">
-        <h2>EB Client lite 1.8</h2>
+      <a class="game-link" href="EB Client Lite CU2 Offline.html">
+        <h2>EB Client Lite 1.8</h2>
         <p>Lite version of EB Client</p>
       </a>
-
 
       <a class="game-link" href="modernclient">
         <h2>Modern Client 1.12</h2>
         <p>Modern Client.</p>
       </a>
 
-
       <a class="game-link" href="Nebula Client (Maybe Ratted).html">
         <h2>Nebula Client</h2>
         <p>Go Explore.</p>
       </a>
-
 
       <a class="game-link" href="OddFuture Client.html">
         <h2>Odd Future Client</h2>
         <p>Go Explore.</p>
       </a>
 
-
       <a class="game-link" href="Resent PvP Client (Press K for Menu).html">
         <h2>Resent PVP Client</h2>
         <p>Go Explore.</p>
       </a>
-
 
       <a class="game-link" href="hackedclient">
         <h2>Hacked Client</h2>
         <p>Go Explore.</p>
       </a>
 
-
       <a class="game-link" href="peaklegacyclient">
         <h2>Peak Legacy Client</h2>
         <p>Go Explore.</p>
       </a>
 
-
       <a class="game-link" href="Java-1.20">
         <h2>Java 1.20 Client</h2>
         <p>Go Explore.</p>
       </a>
-
 
       <a class="game-link" href="deathclient">
         <h2>Death Client</h2>
@@ -248,8 +281,28 @@ EB Client Lite CU2 Offline.html">
     </section>
 
     <div class="bottom">
-      © 2026 PulseWave • <a href="https://www.youtube.com/@notpulsewave" target="_blank" rel="noopener noreferrer" style="color:inherit;">youtube.com/@notpulsewave</a>
+      © 2026 PulseWave • <a href="https://www.youtube.com/@notpulsewave" target="_blank" style="color:inherit;">youtube.com/@notpulsewave</a>
     </div>
   </main>
+
+  <script>
+    function checkPassword() {
+      const input = document.getElementById('password-input').value;
+      const error = document.getElementById('error-msg');
+
+      if (input === 'NotPulseWave_YT') {
+        document.getElementById('password-screen').style.display = 'none';
+        document.getElementById('main-content').style.display = 'block';
+      } else {
+        error.style.display = 'block';
+      }
+    }
+
+    document.getElementById('password-input').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        checkPassword();
+      }
+    });
+  </script>
 </body>
 </html>
