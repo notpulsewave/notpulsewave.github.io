@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>67 Meme</title>
+<style>
+body {
+  margin: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #111;
+  overflow: hidden;
+}
+
+#btn {
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+  color: white;
+  background: #222;
+  border: 3px solid #fff;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  user-select: none;
+  transition: all 0.3s ease;
+}
+
+#btn.small {
+  width: 80px;
+  height: 80px;
+  font-size: 32px;
+}
+
+#btn.big {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw;
+  height: 100vh;
+  font-size: 25vw;
+  background: #000;
+  border: none;
+  border-radius: 0;
+  gap: 4vw;
+  z-index: 9999;
+}
+
+.num {
+  display: inline-block;
+  transition: transform 0.4s ease;
+}
+
+.animate .six { animation: bob6 0.8s infinite alternate ease-in-out; }
+.animate .seven { animation: bob7 0.8s infinite alternate ease-in-out; }
+
+@keyframes bob6 {
+  from { transform: translateY(-25%); }
+  to   { transform: translateY(25%); }
+}
+
+@keyframes bob7 {
+  from { transform: translateY(25%); }
+  to   { transform: translateY(-25%); }
+}
+</style>
+</head>
+<body>
+
+<div id="btn" class="small">
+  <span class="num six">6</span>
+  <span class="num seven">7</span>
+</div>
+
+<script>
+const btn = document.getElementById('btn');
+let isBig = false;
+
+btn.addEventListener('click', (e) => {
+  e.stopImmediatePropagation();
+  if (!isBig) {
+    btn.classList.remove('small');
+    btn.classList.add('big');
+    isBig = true;
+    setTimeout(() => btn.classList.add('animate'), 50);
+  }
+});
+
+document.addEventListener('click', () => {
+  if (isBig) {
+    btn.classList.remove('big', 'animate');
+    btn.classList.add('small');
+    isBig = false;
+  }
+});
+</script>
+
+</body>
+</html>
