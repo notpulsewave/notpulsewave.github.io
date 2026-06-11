@@ -6,12 +6,13 @@
   <title>PulseWave | Minecraft YouTube Channel</title>
   <style>
     :root {
-      --bg1: #1b2e1f;
-      --bg2: #2f5b36;
-      --text: #f4f8f1;
-      --muted: #d4e3d2;
-      --accent: #7ee081;
-      --shadow: rgba(0, 0, 0, 0.4);
+      --bg-dark: #000000;
+      --bg-panel: #0a0a0a;
+      --text: #ffffff;
+      --muted: #aaaaaa;
+      --accent: #ff0000;
+      --accent-dark: #cc0000;
+      --shadow: rgba(255, 0, 0, 0.2);
     }
 
     * { box-sizing: border-box; }
@@ -21,7 +22,7 @@
       min-height: 100vh;
       font-family: 'Segoe UI', Arial, sans-serif;
       color: var(--text);
-      background: linear-gradient(135deg, var(--bg1), var(--bg2));
+      background: linear-gradient(135deg, #050505, #1a0000);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -34,28 +35,28 @@
       max-width: 920px;
       border-radius: 20px;
       overflow: hidden;
-      background: rgba(30, 45, 32, 0.95);
-      border: 1px solid rgba(126, 224, 129, 0.2);
-      box-shadow: 0 30px 80px var(--shadow);
+      background: rgba(10, 10, 10, 0.95);
+      border: 1px solid rgba(255, 0, 0, 0.2);
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8);
     }
 
     .topbar {
       height: 6px;
-      background: linear-gradient(to right, #7ee081, #4f9c53);
+      background: linear-gradient(to right, #ff0000, #8b0000);
     }
 
     .hero {
       padding: 60px 40px 50px;
       text-align: center;
-      background: rgba(255,255,255,0.03);
+      background: rgba(255, 0, 0, 0.02);
     }
 
     .badge {
       display: inline-block;
       padding: 6px 16px;
       border-radius: 999px;
-      background: rgba(126, 224, 129, 0.12);
-      border: 1px solid rgba(126, 224, 129, 0.3);
+      background: rgba(255, 0, 0, 0.15);
+      border: 1px solid rgba(255, 0, 0, 0.4);
       color: var(--accent);
       font-weight: 600;
       font-size: 0.75rem;
@@ -69,10 +70,12 @@
       font-weight: 800;
       letter-spacing: -2px;
       line-height: 0.9;
+      color: #fff;
+      text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
     }
 
     h1 span {
-      color: #c8f0c8;
+      color: #ff3333;
     }
 
     .subtitle {
@@ -102,110 +105,74 @@
       border: none;
       font-size: 0.95rem;
       min-width: 150px;
+      position: relative;
+      overflow: hidden; /* Ensures ripple stays inside button */
+      cursor: pointer;
     }
 
     .btn:hover {
       transform: translateY(-3px);
-      filter: brightness(1.08);
     }
 
     .primary {
-      background: #7ee081;
-      color: #1a2f1f;
-      box-shadow: 0 8px 0 #4f9c53;
+      background: #ff0000;
+      color: #ffffff;
+      box-shadow: 0 8px 0 #8b0000;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    }
+
+    .primary:hover {
+      background: #ff1a1a;
     }
 
     .secondary {
-      background: #3b5f40;
+      background: #1a0000;
       color: var(--text);
-      border: 1px solid rgba(126, 224, 129, 0.25);
+      border: 1px solid rgba(255, 0, 0, 0.3);
+      box-shadow: 0 4px 0 #330000;
+    }
+
+    .secondary:hover {
+      background: #2a0000;
+      border-color: rgba(255, 0, 0, 0.6);
+    }
+
+    /* Ripple Effect Styles */
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255, 0, 0, 0.6);
+      transform: scale(0);
+      animation: ripple-anim 0.6s linear;
+      pointer-events: none;
+    }
+
+    @keyframes ripple-anim {
+      to {
+        transform: scale(4);
+        opacity: 0;
+      }
     }
 
     .bottom {
       padding: 18px 40px;
       text-align: center;
       font-size: 0.85rem;
-      color: rgba(255,255,255,0.55);
-      background: rgba(0,0,0,0.15);
+      color: rgba(255,255,255,0.4);
+      background: rgba(0,0,0,0.5);
+      border-top: 1px solid rgba(255,0,0,0.1);
     }
-
-    /* Password Screen */
-    #password-screen {
-      position: fixed;
-      inset: 0;
-      background: linear-gradient(135deg, #1b2e1f, #2f5b36);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 100;
-    }
-
-    .password-box {
-      background: rgba(30, 45, 32, 0.95);
-      padding: 40px 50px;
-      border-radius: 20px;
-      border: 1px solid rgba(126, 224, 129, 0.2);
-      box-shadow: 0 30px 80px rgba(0,0,0,0.5);
-      text-align: center;
-      width: 100%;
-      max-width: 380px;
-    }
-
-    .password-box h2 {
-      margin: 0 0 24px;
-      font-size: 1.6rem;
-    }
-
-    .password-box input {
-      width: 100%;
-      padding: 14px 18px;
-      font-size: 1.05rem;
-      border: 2px solid rgba(126, 224, 129, 0.3);
-      border-radius: 10px;
-      background: #1b2e1f;
-      color: var(--text);
-      margin-bottom: 16px;
-      outline: none;
-    }
-
-    .password-box input:focus {
-      border-color: #7ee081;
-    }
-
-    .password-box button {
-      width: 100%;
-      padding: 14px;
-      font-weight: 700;
-      border-radius: 10px;
-      background: #7ee081;
-      color: #1a2f1f;
-      border: none;
-      font-size: 1rem;
-      cursor: pointer;
-    }
-
-    .error {
-      color: #ff8a8a;
-      font-size: 0.85rem;
-      margin-top: 8px;
-      display: none;
+    
+    .bottom a {
+      color: #ff4d4d;
+      text-decoration: none;
     }
   </style>
 </head>
 <body>
 
-  <!-- Password Screen -->
-  <div id="password-screen">
-    <div class="password-box">
-      <h2>Enter Password</h2>
-      <input type="password" id="password-input" placeholder="Password">
-      <button onclick="checkPassword()">Unlock</button>
-      <p class="error" id="error-msg">Incorrect password</p>
-    </div>
-  </div>
-
-  <!-- Main Content -->
-  <main class="container" id="main-content" style="display: none;">
+  <!-- Main Content (Password Screen Removed) -->
+  <main class="container" id="main-content">
     <div class="topbar"></div>
 
     <section class="hero">
@@ -234,23 +201,32 @@
   </main>
 
   <script>
-    function checkPassword() {
-      const input = document.getElementById('password-input').value;
-      const error = document.getElementById('error-msg');
-      
-      if (input === 'NotPulseWave_YT') {
-        document.getElementById('password-screen').style.display = 'none';
-        document.getElementById('main-content').style.display = 'block';
-      } else {
-        error.style.display = 'block';
-      }
-    }
+    // Ripple Effect Logic
+    const buttons = document.querySelectorAll('.btn');
 
-    // Allow Enter key to submit
-    document.getElementById('password-input').addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
-        checkPassword();
-      }
+    buttons.forEach(btn => {
+      btn.addEventListener('mouseenter', function(e) {
+        // Create ripple element
+        const ripple = document.createElement('span');
+        ripple.classList.add('ripple');
+        
+        // Get button dimensions
+        const rect = btn.getBoundingClientRect();
+        const size = Math.max(rect.width, rect.height);
+        
+        // Set size and position to center of button
+        ripple.style.width = ripple.style.height = `${size}px`;
+        ripple.style.left = `${rect.width / 2 - size / 2}px`;
+        ripple.style.top = `${rect.height / 2 - size / 2}px`;
+        
+        // Append to button
+        btn.appendChild(ripple);
+        
+        // Remove ripple after animation ends
+        setTimeout(() => {
+          ripple.remove();
+        }, 600); // Matches animation duration
+      });
     });
   </script>
 </body>
