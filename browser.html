@@ -6,57 +6,59 @@
     <style>
         body { margin: 0; background: #0a0a0a; font-family: 'Courier New', monospace; color: #ff0000; overflow: hidden; }
         
+        .hidden-indicator {
+            position: fixed; top: 0; left: 0; width: 100%; height: 2px;
+            background: #ff0000; z-index: 9999; display: none; cursor: pointer;
+        }
+        .hidden-indicator:hover { background: #fff; }
+
+        #main-interface {
+            width: 100%; background: #000; transition: transform 0.3s ease;
+            position: relative; z-index: 100;
+        }
+        #main-interface.hidden { transform: translateY(-100%); }
+
         #controls {
-            background: #000;
-            padding: 10px 15px;
-            border-bottom: 2px solid #ff0000;
-            display: flex;
-            gap: 10px;
-            align-items: center;
+            padding: 10px 15px; border-bottom: 2px solid #ff0000;
+            display: flex; gap: 10px; align-items: center; position: relative;
         }
 
-        /* Tab Styling */
+        .toggle-ui-btn, .settings-btn {
+            background: transparent; border: 1px solid #330000; color: #660000;
+            cursor: pointer; font-size: 16px; padding: 0 10px;
+        }
+        .toggle-ui-btn:hover, .settings-btn:hover { color: #ff0000; border-color: #ff0000; }
+        .settings-btn { margin-left: auto; }
+
         #tab-container {
-            display: flex;
-            background: #000;
-            border-bottom: 1px solid #330000;
-            overflow-x: auto;
-            scrollbar-width: none;
+            display: flex; background: #000; border-bottom: 1px solid #330000;
+            overflow-x: auto; scrollbar-width: none;
         }
         #tab-container::-webkit-scrollbar { display: none; }
 
         .tab {
-            padding: 8px 15px;
-            cursor: pointer;
-            border-right: 1px solid #330000;
-            background: #0a0a0a;
-            color: #660000;
-            white-space: nowrap;
-            position: relative;
-            max-width: 150px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            font-size: 12px;
+            padding: 8px 15px; cursor: pointer; border-right: 1px solid #330000;
+            background: #0a0a0a; color: #660000; white-space: nowrap;
+            position: relative; max-width: 150px; overflow: hidden;
+            text-overflow: ellipsis; font-size: 12px; display: flex; align-items: center;
         }
 
         .tab.active {
-            background: #1a0000;
-            color: #ff0000;
-            border-top: 2px solid #ff0000;
+            background: #1a0000; color: #ff0000; border-top: 2px solid #ff0000;
         }
+        .tab:hover { background: #150000; }
 
-        .tab:hover {
-            background: #150000;
+        .tab-title {
+            flex-grow: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-right: 5px;
         }
 
         .tab-close {
-            margin-left: 8px;
-            color: #ff0000;
-            font-weight: bold;
+            color: #ff0000; font-weight: bold; cursor: pointer; padding: 0 5px;
         }
-        .tab-close:hover {
-            color: #fff;
-        }
+        .tab-close:hover { color: #fff; }
 
         input { 
             background: #000; border: 1px solid #ff0000; color: #ff0000; 
@@ -69,7 +71,6 @@
             transition: 0.3s; text-transform: uppercase;
         }
         .pulse-btn:hover { color: #000; background: #ff0000; }
-        
         .pulse-btn::after {
             content: ""; position: absolute; top: 50%; left: 50%; width: 0; height: 0;
             background: rgba(255, 255, 255, 0.5); border-radius: 50%;
@@ -77,108 +78,96 @@
         }
         .pulse-btn:hover::after { width: 300%; height: 300%; }
 
-        #iframe-container {
-            width: 100vw;
-            height: calc(100vh - 105px);
-        }
+        #iframe-container { width: 100vw; height: calc(100vh - 105px); }
 
-        iframe { 
-            width: 100%; 
-            height: 100%; 
-            border: none; 
-            display: none; 
+        iframe { width: 100%; height: 100%; border: none; display: none; }
+        iframe.active { display: block; }
+
+        #settings-modal {
+            display: none; position: fixed; top: 50%; left: 50%;
+            transform: translate(-50%, -50%); background: #000;
+            border: 2px solid #ff0000; padding: 20px; z-index: 1000;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.2);
         }
-        iframe.active {
-            display: block;
-        }
+        #settings-modal h2 { margin-top: 0; }
+        .setting-row { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; }
+        .close-settings { margin-top: 20px; width: 100%; }
     </style>
 </head>
 <body>
 
-<div id="tab-container"></div>
+<div id="hidden-indicator" class="hidden-indicator" onclick="toggleUI()"></div>
 
-<div id="controls">
-    <button class="pulse-btn" onclick="goHome()">HOME</button>
-    <input type="text" id="urlInput" placeholder="Enter URL or Search Query...">
-    <button class="pulse-btn" onclick="processInput()">GO</button>
-    <button class="pulse-btn" onclick="createTab()">+ NEW</button>
+<div id="main-interface">
+    <div id="tab-container"></div>
+    <div id="controls">
+        <button class="toggle-ui-btn" onclick="toggleUI()">_</button>
+        <button class="pulse-btn" onclick="goHome()">HOME</button>
+        <input type="text" id="urlInput" placeholder="Enter URL or Search Query...">
+        <button class="pulse-btn" onclick="processInput()">GO</button>
+        <button class="pulse-btn" onclick="createTab()">+ NEW</button>
+        <button class="settings-btn" onclick="openSettings()">⚙</button>
+    </div>
 </div>
 
 <div id="iframe-container"></div>
+
+<div id="settings-modal">
+    <h2>System Settings</h2>
+    <div class="setting-row">
+        <span>Open in about:blank (Stealth)</span>
+        <input type="checkbox" id="aboutBlankToggle" onchange="toggleAboutBlank()">
+    </div>
+    <p style="font-size: 10px; color: #666; margin-top: 5px;">Tip: Press Ctrl+B to hide/show toolbar.</p>
+    <button class="pulse-btn close-settings" onclick="closeSettings()">CLOSE</button>
+</div>
 
 <script>
     const tabContainer = document.getElementById('tab-container');
     const iframeContainer = document.getElementById('iframe-container');
     const input = document.getElementById('urlInput');
+    const mainInterface = document.getElementById('main-interface');
+    const hiddenIndicator = document.getElementById('hidden-indicator');
     let tabs = [];
     let activeTabId = null;
     let tabCounter = 0;
+    let aboutBlankWindow = null;
 
-    // --- SESSION MANAGEMENT ---
+    // --- UI & SETTINGS ---
 
-    // 1. Ask to restore tabs on load
-    window.onload = () => {
-        const savedSession = localStorage.getItem('breachBrowserTabs');
-        if (savedSession) {
-            if (confirm("Restore tabs from previous session?")) {
-                restoreTabs(JSON.parse(savedSession));
-                return;
-            } else {
-                localStorage.removeItem('breachBrowserTabs');
-            }
-        }
-        // If no session or user cancelled, create default tab
-        if (tabs.length === 0) createTab();
-    };
-
-    // 2. Save tabs before unload
-    window.addEventListener('beforeunload', () => {
-        saveTabs();
-    });
-
-    function saveTabs() {
-        const sessionData = tabs.map(t => ({
-            id: t.id,
-            url: t.element.src,
-            title: t.title,
-            isActive: t.id === activeTabId
-        }));
-        localStorage.setItem('breachBrowserTabs', JSON.stringify(sessionData));
+    function toggleUI() {
+        mainInterface.classList.toggle('hidden');
+        hiddenIndicator.style.display = mainInterface.classList.contains('hidden') ? 'block' : 'none';
     }
 
-    function restoreTabs(sessionData) {
-        // Reset state
-        tabContainer.innerHTML = '';
-        iframeContainer.innerHTML = '';
-        tabs = [];
-        activeTabId = null;
-        tabCounter = sessionData.length; // Sync counter so IDs don't clash if we add new ones later
+    document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.key.toLowerCase() === 'b') {
+            e.preventDefault();
+            toggleUI();
+        }
+    });
 
-        sessionData.forEach(item => {
-            const tabId = `tab-${item.id}`;
-            
-            // Create Tab Element
-            const tabBtn = document.createElement('div');
-            tabBtn.className = 'tab';
-            if (item.isActive) tabBtn.classList.add('active');
-            tabBtn.id = `tab-btn-${tabId}`;
-            tabBtn.innerHTML = `<span class="tab-title">${item.title || 'Tab'}</span> <span class="tab-close" onclick="closeTab('${tabId}', event)">×</span>`;
-            tabBtn.onclick = (e) => switchTab(tabId);
-            tabContainer.appendChild(tabBtn);
+    function openSettings() { document.getElementById('settings-modal').style.display = 'block'; }
+    function closeSettings() { document.getElementById('settings-modal').style.display = 'none'; }
 
-            // Create Iframe
-            const iframe = document.createElement('iframe');
-            iframe.id = tabId;
-            iframe.src = item.url;
-            if (item.isActive) iframe.classList.add('active');
-            iframeContainer.appendChild(iframe);
-
-            tabs.push({ id: tabId, element: iframe, btnElement: tabBtn, title: item.title || 'Tab' });
-            if (item.isActive) activeTabId = tabId;
-        });
-
-        if (!activeTabId && tabs.length > 0) {
-            switchTab(tabs[0].id);
+    function toggleAboutBlank() {
+        const isChecked = document.getElementById('aboutBlankToggle').checked;
+        if (isChecked) {
+            if (!aboutBlankWindow || aboutBlankWindow.closed) {
+                aboutBlankWindow = window.open('about:blank', '_blank');
+                if (!aboutBlankWindow) {
+                    alert("Popup blocked!");
+                    document.getElementById('aboutBlankToggle').checked = false;
+                    return;
+                }
+            }
+            const doc = aboutBlankWindow.document;
+            doc.open();
+            doc.write(`<html><head><style>body{margin:0;overflow:hidden;}</style></head><body><iframe src="${window.location.href}" style="width:100vw;height:100vh;border:none;"></iframe></body></html>`);
+            doc.close();
+            window.location.href = 'about:blank';
+        } else {
+            alert("Stealth mode disabled. Close the popup manually.");
         }
     }
 
@@ -191,8 +180,11 @@
         const tabBtn = document.createElement('div');
         tabBtn.className = 'tab';
         tabBtn.id = `tab-btn-${tabId}`;
-        tabBtn.innerHTML = `<span class="tab-title">New Tab</span> <span class="tab-close" onclick="closeTab('${tabId}', event)">×</span>`;
-        tabBtn.onclick = (e) => switchTab(tabId);
+        // Use data attribute for cleaner event handling
+        tabBtn.innerHTML = `
+            <span class="tab-title" onclick="switchTab('${tabId}')">New Tab</span> 
+            <span class="tab-close" onclick="closeTab('${tabId}', event)">×</span>
+        `;
         tabContainer.appendChild(tabBtn);
 
         const iframe = document.createElement('iframe');
@@ -219,23 +211,27 @@
     }
 
     function closeTab(tabId, event) {
-        event.stopPropagation();
+        if (event) event.stopPropagation(); // Prevent bubbling to tab click
+        
         const tabIndex = tabs.findIndex(t => t.id === tabId);
         if (tabIndex === -1) return;
 
-        tabs[tabIndex].element.remove();
-        tabs[tabIndex].btnElement.remove();
+        const tabObj = tabs[tabIndex];
+        tabObj.element.remove();
+        tabObj.btnElement.remove();
         tabs.splice(tabIndex, 1);
 
         if (activeTabId === tabId) {
             if (tabs.length > 0) {
-                switchTab(tabs[tabs.length - 1].id);
+                // Switch to the last available tab
+                const lastTab = tabs[tabs.length - 1];
+                switchTab(lastTab.id);
             } else {
+                // If no tabs left, create a new one
                 createTab();
             }
         }
-        // Save state immediately on close so next time it's accurate
-        saveTabs(); 
+        saveTabs();
     }
 
     function goHome() {
@@ -271,9 +267,66 @@
     function updateTabTitle(tabId, title) {
         const tabData = tabs.find(t => t.id === tabId);
         if (tabData) {
-            tabData.btnElement.querySelector('.tab-title').textContent = title;
-            tabData.title = title; // Update object data too
+            const titleEl = tabData.btnElement.querySelector('.tab-title');
+            if (titleEl) titleEl.textContent = title;
+            tabData.title = title;
         }
+    }
+
+    // --- SESSION MANAGEMENT ---
+
+    window.onload = () => {
+        const savedSession = localStorage.getItem('breachBrowserTabs');
+        if (savedSession) {
+            if (confirm("Restore tabs from previous session?")) {
+                restoreTabs(JSON.parse(savedSession));
+                return;
+            } else {
+                localStorage.removeItem('breachBrowserTabs');
+            }
+        }
+        if (tabs.length === 0) createTab();
+    };
+
+    window.addEventListener('beforeunload', saveTabs);
+
+    function saveTabs() {
+        const sessionData = tabs.map(t => ({
+            id: t.id,
+            url: t.element.src,
+            title: t.title,
+            isActive: t.id === activeTabId
+        }));
+        localStorage.setItem('breachBrowserTabs', JSON.stringify(sessionData));
+    }
+
+    function restoreTabs(sessionData) {
+        tabContainer.innerHTML = '';
+        iframeContainer.innerHTML = '';
+        tabs = [];
+        activeTabId = null;
+        tabCounter = sessionData.length;
+
+        sessionData.forEach(item => {
+            const tabId = `tab-${item.id}`;
+            const tabBtn = document.createElement('div');
+            tabBtn.className = 'tab';
+            if (item.isActive) tabBtn.classList.add('active');
+            tabBtn.id = `tab-btn-${tabId}`;
+            tabBtn.innerHTML = `<span class="tab-title" onclick="switchTab('${tabId}')">${item.title || 'Tab'}</span> <span class="tab-close" onclick="closeTab('${tabId}', event)">×</span>`;
+            tabContainer.appendChild(tabBtn);
+
+            const iframe = document.createElement('iframe');
+            iframe.id = tabId;
+            iframe.src = item.url;
+            if (item.isActive) iframe.classList.add('active');
+            iframeContainer.appendChild(iframe);
+
+            tabs.push({ id: tabId, element: iframe, btnElement: tabBtn, title: item.title || 'Tab' });
+            if (item.isActive) activeTabId = tabId;
+        });
+
+        if (!activeTabId && tabs.length > 0) switchTab(tabs[0].id);
     }
 
     input.addEventListener('keypress', (e) => {
