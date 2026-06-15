@@ -18,23 +18,55 @@
         }
         #main-interface.hidden { transform: translateY(-100%); }
 
-        #controls {
+        /* URL Bar Visibility Control */
+        .url-bar-container {
             padding: 10px 15px; border-bottom: 2px solid #ff0000;
             display: flex; gap: 10px; align-items: center; position: relative;
         }
-
-        .toggle-ui-btn, .settings-btn {
-            background: transparent; border: 1px solid #330000; color: #660000;
-            cursor: pointer; font-size: 16px; padding: 0 10px;
+        /* When main interface is hidden, hide url bar UNLESS 'always-show' is active */
+        #main-interface.hidden .url-bar-container {
+            display: none;
         }
-        .toggle-ui-btn:hover, .settings-btn:hover { color: #ff0000; border-color: #ff0000; }
+        #main-interface.hidden .url-bar-container.pinned {
+            display: flex;
+            position: fixed; top: 0; left: 0; width: 100%;
+            background: rgba(0,0,0,0.9); border-bottom: 1px solid #ff0000;
+            z-index: 1000; padding: 5px 15px;
+        }
+
+        .toggle-ui-btn, .settings-btn, .bookmark-btn {
+            background: transparent; border: 1px solid #330000; color: #660000;
+            cursor: pointer; font-size: 14px; padding: 5px 10px;
+            transition: 0.2s;
+        }
+        .toggle-ui-btn:hover, .settings-btn:hover, .bookmark-btn:hover { color: #ff0000; border-color: #ff0000; }
         .settings-btn { margin-left: auto; }
+        .bookmark-btn.active { background: #ff0000; color: #000; border-color: #ff0000; }
 
         #tab-container {
             display: flex; background: #000; border-bottom: 1px solid #330000;
             overflow-x: auto; scrollbar-width: none;
         }
         #tab-container::-webkit-scrollbar { display: none; }
+
+        /* Bookmarks Bar */
+        #bookmarks-container {
+            display: flex; background: #0a0a0a; border-bottom: 1px solid #330000;
+            overflow-x: auto; scrollbar-width: none; height: 30px; align-items: center;
+        }
+        #bookmarks-container::-webkit-scrollbar { display: none; }
+        
+        .bookmark-item {
+            padding: 0 10px; cursor: pointer; border-right: 1px solid #330000;
+            color: #660000; white-space: nowrap; font-size: 11px; display: flex; align-items: center; gap: 5px;
+            height: 100%;
+        }
+        .bookmark-item:hover { background: #150000; color: #ff0000; }
+        .bookmark-remove {
+            font-size: 10px; opacity: 0; transition: opacity 0.2s;
+        }
+        .bookmark-item:hover .bookmark-remove { opacity: 1; }
+        .bookmark-remove:hover { color: #fff; }
 
         .tab {
             padding: 8px 15px; cursor: pointer; border-right: 1px solid #330000;
@@ -62,7 +94,7 @@
 
         input { 
             background: #000; border: 1px solid #ff0000; color: #ff0000; 
-            padding: 8px; flex-grow: 1; font-family: inherit;
+            padding: 8px; flex-grow: 1; font-family: inherit; outline: none;
         }
 
         .pulse-btn {
@@ -78,20 +110,55 @@
         }
         .pulse-btn:hover::after { width: 300%; height: 300%; }
 
-        #iframe-container { width: 100vw; height: calc(100vh - 105px); }
+        /* Static height for iframe */
+        #iframe-container { 
+            width: 100vw; 
+            height: calc(100vh - 145px); /* Adjusted for bookmarks bar height */
+            display: flex; justify-content: center; align-items: flex-start;
+            overflow: auto;
+        }
 
-        iframe { width: 100%; height: 100%; border: none; display: none; }
+        iframe { 
+            width: 100%; 
+            height: 100%; 
+            border: none; 
+            display: none; 
+            transition: transform 0.2s ease;
+            transform-origin: top left;
+        }
         iframe.active { display: block; }
+
+        /* Scrollbar Hiding Class */
+        .hide-scrollbars { scrollbar-width: none; }
+        .hide-scrollbars::-webkit-scrollbar { display: none; }
 
         #settings-modal {
             display: none; position: fixed; top: 50%; left: 50%;
             transform: translate(-50%, -50%); background: #000;
             border: 2px solid #ff0000; padding: 20px; z-index: 1000;
-            box-shadow: 0 0 20px rgba(255, 0, 0, 0.2);
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.2); width: 350px;
         }
-        #settings-modal h2 { margin-top: 0; }
-        .setting-row { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; }
+        #settings-modal h2 { margin-top: 0; font-size: 18px; border-bottom: 1px solid #330000; padding-bottom: 10px;}
+        .setting-row { 
+            display: flex; justify-content: space-between; 
+            align-items: center; margin-top: 15px; 
+        }
         .close-settings { margin-top: 20px; width: 100%; }
+        
+        /* Tabs for Settings Modal */
+        .settings-tabs { display: flex; gap: 10px; margin-bottom: 15px; border-bottom: 1px solid #330000; padding-bottom: 5px;}
+        .settings-tab-btn { background: transparent; border: none; color: #660000; cursor: pointer; font-family: inherit;}
+        .settings-tab-btn.active { color: #ff0000; font-weight: bold; }
+        
+        .bookmark-list-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 5px; border: 1px solid #330000; margin-bottom: 5px; font-size: 11px;
+        }
+        .bookmark-list-item span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 200px;}
+        .del-bookmark { color: #ff0000; cursor: pointer; margin-left: 10px; }
+        .del-bookmark:hover { color: #fff; }
+        
+        input[type="range"] { width: 100px; accent-color: #ff0000; }
     </style>
 </head>
 <body>
@@ -100,12 +167,19 @@
 
 <div id="main-interface">
     <div id="tab-container"></div>
-    <div id="controls">
+    
+    <!-- Bookmarks Bar -->
+    <div id="bookmarks-container"></div>
+
+    <!-- URL Bar -->
+    <div id="url-bar-container" class="url-bar-container">
         <button class="toggle-ui-btn" onclick="toggleUI()">_</button>
         <button class="pulse-btn" onclick="goHome()">HOME</button>
+        <button class="pulse-btn" onclick="reloadTab()" title="Reload Tab">⟳</button> <!-- NEW RELOAD BUTTON -->
         <input type="text" id="urlInput" placeholder="Enter URL or Search Query...">
         <button class="pulse-btn" onclick="processInput()">GO</button>
         <button class="pulse-btn" onclick="createTab()">+ NEW</button>
+        <button class="bookmark-btn" id="bookmarkBtn" onclick="toggleBookmark()" title="Bookmark this page">★</button>
         <button class="settings-btn" onclick="openSettings()">⚙</button>
     </div>
 </div>
@@ -114,30 +188,76 @@
 
 <div id="settings-modal">
     <h2>System Settings</h2>
-    <div class="setting-row">
-        <span>Open in about:blank (Stealth)</span>
-        <input type="checkbox" id="aboutBlankToggle" onchange="toggleAboutBlank()">
+    
+    <div class="settings-tabs">
+        <button class="settings-tab-btn active" onclick="switchSettingsTab('general')">General</button>
+        <button class="settings-tab-btn" onclick="switchSettingsTab('bookmarks')">Bookmarks</button>
     </div>
-    <p style="font-size: 10px; color: #666; margin-top: 5px;">Tip: Press Ctrl+B to hide/show toolbar.</p>
+
+    <!-- General Settings Tab -->
+    <div id="settings-general">
+        <div class="setting-row">
+            <span>Stealth Mode (About:Blank)</span>
+            <input type="checkbox" id="aboutBlankToggle" onchange="toggleAboutBlank()">
+        </div>
+
+        <div class="setting-row">
+            <span>Block Popups</span>
+            <input type="checkbox" id="blockPopupsToggle" onchange="updateIframeSecurity()">
+        </div>
+
+        <div class="setting-row">
+            <span>Hide Scrollbars</span>
+            <input type="checkbox" id="hideScrollbarsToggle" onchange="toggleScrollbars()">
+        </div>
+
+        <div class="setting-row">
+            <span>Always Show URL Bar</span>
+            <input type="checkbox" id="pinUrlToggle" onchange="togglePinUrl()">
+        </div>
+
+        <div class="setting-row">
+            <span>Zoom Level</span>
+            <div style="display:flex; align-items:center; gap:10px;">
+                <input type="range" id="zoomSlider" min="50" max="200" value="100" oninput="updateZoom()">
+                <span id="zoomValue">100%</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bookmarks Management Tab -->
+    <div id="settings-bookmarks" style="display:none;">
+        <div style="height: 200px; overflow-y: auto;" id="bookmarkListContainer">
+            <!-- Bookmarks loaded here -->
+        </div>
+    </div>
+
     <button class="pulse-btn close-settings" onclick="closeSettings()">CLOSE</button>
 </div>
 
 <script>
     const tabContainer = document.getElementById('tab-container');
     const iframeContainer = document.getElementById('iframe-container');
+    const bookmarksContainer = document.getElementById('bookmarks-container');
+    const bookmarkListContainer = document.getElementById('bookmarkListContainer');
     const input = document.getElementById('urlInput');
     const mainInterface = document.getElementById('main-interface');
     const hiddenIndicator = document.getElementById('hidden-indicator');
+    const urlBarContainer = document.getElementById('url-bar-container');
+    const bookmarkBtn = document.getElementById('bookmarkBtn');
+
     let tabs = [];
     let activeTabId = null;
     let tabCounter = 0;
+    let bookmarks = [];
     let aboutBlankWindow = null;
-
+    
     // --- UI & SETTINGS ---
 
     function toggleUI() {
         mainInterface.classList.toggle('hidden');
-        hiddenIndicator.style.display = mainInterface.classList.contains('hidden') ? 'block' : 'none';
+        const isHidden = mainInterface.classList.contains('hidden');
+        hiddenIndicator.style.display = isHidden ? 'block' : 'none';
     }
 
     document.addEventListener('keydown', (e) => {
@@ -147,8 +267,24 @@
         }
     });
 
-    function openSettings() { document.getElementById('settings-modal').style.display = 'block'; }
-    function closeSettings() { document.getElementById('settings-modal').style.display = 'none'; }
+    function openSettings() { 
+        document.getElementById('settings-modal').style.display = 'block'; 
+        renderBookmarkSettings();
+    }
+    
+    function closeSettings() { 
+        document.getElementById('settings-modal').style.display = 'none'; 
+    }
+
+    function switchSettingsTab(tabName) {
+        document.getElementById('settings-general').style.display = tabName === 'general' ? 'block' : 'none';
+        document.getElementById('settings-bookmarks').style.display = tabName === 'bookmarks' ? 'block' : 'none';
+        
+        document.querySelectorAll('.settings-tab-btn').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+        
+        if(tabName === 'bookmarks') renderBookmarkSettings();
+    }
 
     function toggleAboutBlank() {
         const isChecked = document.getElementById('aboutBlankToggle').checked;
@@ -156,7 +292,7 @@
             if (!aboutBlankWindow || aboutBlankWindow.closed) {
                 aboutBlankWindow = window.open('about:blank', '_blank');
                 if (!aboutBlankWindow) {
-                    alert("Popup blocked!");
+                    alert("Popup blocked by browser!");
                     document.getElementById('aboutBlankToggle').checked = false;
                     return;
                 }
@@ -167,8 +303,148 @@
             doc.close();
             window.location.href = 'about:blank';
         } else {
-            alert("Stealth mode disabled. Close the popup manually.");
+            document.getElementById('aboutBlankToggle').checked = false;
         }
+    }
+
+    // --- NEW SETTINGS: ZOOM & SCROLLBARS & PINS ---
+
+    function updateIframeSecurity() {
+        const block = document.getElementById('blockPopupsToggle').checked;
+        tabs.forEach(t => {
+            try {
+                if (t.element.contentWindow) {
+                    t.element.contentWindow.open = function() { 
+                        console.warn("Popup blocked by System Breach Browser"); 
+                        return null; 
+                    };
+                }
+            } catch (e) { /* ignore cross-origin */ }
+        });
+    }
+
+    function toggleScrollbars() {
+        const hide = document.getElementById('hideScrollbarsToggle').checked;
+        if (hide) {
+            iframeContainer.classList.add('hide-scrollbars');
+            tabContainer.classList.add('hide-scrollbars');
+            bookmarksContainer.classList.add('hide-scrollbars');
+        } else {
+            iframeContainer.classList.remove('hide-scrollbars');
+            tabContainer.classList.remove('hide-scrollbars');
+            bookmarksContainer.classList.remove('hide-scrollbars');
+        }
+    }
+
+    function togglePinUrl() {
+        const pin = document.getElementById('pinUrlToggle').checked;
+        if (pin) {
+            urlBarContainer.classList.add('pinned');
+        } else {
+            urlBarContainer.classList.remove('pinned');
+        }
+    }
+
+    function updateZoom() {
+        const val = document.getElementById('zoomSlider').value;
+        document.getElementById('zoomValue').innerText = val + '%';
+        applyZoom();
+    }
+
+    function applyZoom() {
+        const val = document.getElementById('zoomSlider').value;
+        tabs.forEach(t => {
+            t.element.style.transform = `scale(${val/100})`;
+            // Adjust width/height to prevent overflow issues when zoomed out/in
+            t.element.style.width = `${10000/val}%`;
+            t.element.style.height = `${10000/val}%`;
+        });
+    }
+
+    // --- NEW: RELOAD TAB FUNCTION ---
+    function reloadTab() {
+        if (!activeTabId) return;
+        const iframe = document.getElementById(activeTabId);
+        if (iframe) {
+            // Reload the iframe by setting src to current src
+            iframe.src = iframe.src;
+        }
+    }
+
+    // --- BOOKMARKS LOGIC ---
+
+    function toggleBookmark() {
+        if(!activeTabId) return;
+        const currentTab = tabs.find(t => t.id === activeTabId);
+        const url = currentTab.element.src;
+        const title = currentTab.title;
+
+        const exists = bookmarks.find(b => b.url === url);
+        if(exists) {
+            // Remove bookmark
+            bookmarks = bookmarks.filter(b => b.url !== url);
+            bookmarkBtn.classList.remove('active');
+        } else {
+            // Add bookmark
+            bookmarks.push({ url, title });
+            bookmarkBtn.classList.add('active');
+        }
+        renderBookmarks();
+        saveSettings();
+    }
+
+    function renderBookmarks() {
+        bookmarksContainer.innerHTML = '';
+        bookmarks.forEach((bm, index) => {
+            const div = document.createElement('div');
+            div.className = 'bookmark-item';
+            div.innerHTML = `
+                <span onclick="navigateToBookmark('${bm.url.replace(/'/g, "\\'")}')">${bm.title}</span>
+                <span class="bookmark-remove" onclick="deleteBookmark(${index}, event)">×</span>
+            `;
+            bookmarksContainer.appendChild(div);
+        });
+        
+        // Update button state if current tab is bookmarked
+        if(activeTabId) {
+            const currentUrl = document.getElementById(activeTabId).src;
+            const isBookmarked = bookmarks.some(b => b.url === currentUrl);
+            if(isBookmarked) bookmarkBtn.classList.add('active');
+            else bookmarkBtn.classList.remove('active');
+        }
+    }
+
+    function navigateToBookmark(url) {
+        if(!activeTabId) return;
+        const iframe = document.getElementById(activeTabId);
+        iframe.src = url;
+        updateTabTitle(activeTabId, url.length > 20 ? url.substring(0,20)+'...' : url);
+        saveTabs();
+    }
+
+    function deleteBookmark(index, event) {
+        event.stopPropagation();
+        bookmarks.splice(index, 1);
+        renderBookmarks();
+        renderBookmarkSettings();
+        saveSettings();
+    }
+
+    function renderBookmarkSettings() {
+        bookmarkListContainer.innerHTML = '';
+        if(bookmarks.length === 0) {
+            bookmarkListContainer.innerHTML = '<div style="padding:10px; color:#666;">No bookmarks saved.</div>';
+            return;
+        }
+        bookmarks.forEach((bm, index) => {
+            const div = document.createElement('div');
+            div.className = 'bookmark-list-item';
+            div.innerHTML = `
+                <span title="${bm.url}">${bm.title}</span>
+                <span class="del-bookmark" onclick="deleteBookmark(${index}, event)">DELETE</span>
+            `;
+            bookmarkListContainer.appendChild(div);
+        });
     }
 
     // --- TAB LOGIC ---
@@ -180,7 +456,6 @@
         const tabBtn = document.createElement('div');
         tabBtn.className = 'tab';
         tabBtn.id = `tab-btn-${tabId}`;
-        // Use data attribute for cleaner event handling
         tabBtn.innerHTML = `
             <span class="tab-title" onclick="switchTab('${tabId}')">New Tab</span> 
             <span class="tab-close" onclick="closeTab('${tabId}', event)">×</span>
@@ -195,6 +470,10 @@
 
         tabs.push({ id: tabId, element: iframe, btnElement: tabBtn, title: 'New Tab' });
         switchTab(tabId);
+        
+        // Apply settings
+        updateIframeSecurity();
+        applyZoom();
     }
 
     function switchTab(tabId) {
@@ -207,11 +486,16 @@
             tabData.btnElement.classList.add('active');
             activeTabId = tabId;
             input.value = "";
+            // Check if this new tab is bookmarked
+            const currentUrl = tabData.element.src;
+            const isBookmarked = bookmarks.some(b => b.url === currentUrl);
+            if(isBookmarked) bookmarkBtn.classList.add('active');
+            else bookmarkBtn.classList.remove('active');
         }
     }
 
     function closeTab(tabId, event) {
-        if (event) event.stopPropagation(); // Prevent bubbling to tab click
+        if (event) event.stopPropagation();
         
         const tabIndex = tabs.findIndex(t => t.id === tabId);
         if (tabIndex === -1) return;
@@ -223,11 +507,9 @@
 
         if (activeTabId === tabId) {
             if (tabs.length > 0) {
-                // Switch to the last available tab
                 const lastTab = tabs[tabs.length - 1];
                 switchTab(lastTab.id);
             } else {
-                // If no tabs left, create a new one
                 createTab();
             }
         }
@@ -277,6 +559,30 @@
 
     window.onload = () => {
         const savedSession = localStorage.getItem('breachBrowserTabs');
+        const savedSettings = localStorage.getItem('breachBrowserSettings');
+        
+        // Restore Settings
+        if (savedSettings) {
+            const settings = JSON.parse(savedSettings);
+            
+            document.getElementById('aboutBlankToggle').checked = settings.stealthMode || false;
+            document.getElementById('blockPopupsToggle').checked = settings.blockPopups || false;
+            document.getElementById('hideScrollbarsToggle').checked = settings.hideScrollbars || false;
+            document.getElementById('pinUrlToggle').checked = settings.pinUrl || false;
+            
+            // Zoom
+            document.getElementById('zoomSlider').value = settings.zoom || 100;
+            document.getElementById('zoomValue').innerText = (settings.zoom || 100) + '%';
+
+            // Bookmarks
+            bookmarks = settings.bookmarks || [];
+
+            // Apply visual settings immediately
+            if (settings.hideScrollbars) toggleScrollbars();
+            if (settings.pinUrl) togglePinUrl();
+        }
+
+        // Restore Tabs
         if (savedSession) {
             if (confirm("Restore tabs from previous session?")) {
                 restoreTabs(JSON.parse(savedSession));
@@ -288,7 +594,10 @@
         if (tabs.length === 0) createTab();
     };
 
-    window.addEventListener('beforeunload', saveTabs);
+    window.addEventListener('beforeunload', () => {
+        saveTabs();
+        saveSettings();
+    });
 
     function saveTabs() {
         const sessionData = tabs.map(t => ({
@@ -298,6 +607,18 @@
             isActive: t.id === activeTabId
         }));
         localStorage.setItem('breachBrowserTabs', JSON.stringify(sessionData));
+    }
+
+    function saveSettings() {
+        const settingsData = {
+            stealthMode: document.getElementById('aboutBlankToggle').checked,
+            blockPopups: document.getElementById('blockPopupsToggle').checked,
+            hideScrollbars: document.getElementById('hideScrollbarsToggle').checked,
+            pinUrl: document.getElementById('pinUrlToggle').checked,
+            zoom: document.getElementById('zoomSlider').value,
+            bookmarks: bookmarks
+        };
+        localStorage.setItem('breachBrowserSettings', JSON.stringify(settingsData));
     }
 
     function restoreTabs(sessionData) {
@@ -327,6 +648,11 @@
         });
 
         if (!activeTabId && tabs.length > 0) switchTab(tabs[0].id);
+        
+        // Apply settings
+        updateIframeSecurity();
+        applyZoom();
+        renderBookmarks();
     }
 
     input.addEventListener('keypress', (e) => {
