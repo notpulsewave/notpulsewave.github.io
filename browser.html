@@ -8,11 +8,54 @@
         
         #controls {
             background: #000;
-            padding: 15px;
+            padding: 10px 15px;
             border-bottom: 2px solid #ff0000;
             display: flex;
             gap: 10px;
             align-items: center;
+        }
+
+        /* Tab Styling */
+        #tab-container {
+            display: flex;
+            background: #000;
+            border-bottom: 1px solid #330000;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        #tab-container::-webkit-scrollbar { display: none; }
+
+        .tab {
+            padding: 8px 15px;
+            cursor: pointer;
+            border-right: 1px solid #330000;
+            background: #0a0a0a;
+            color: #660000;
+            white-space: nowrap;
+            position: relative;
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 12px;
+        }
+
+        .tab.active {
+            background: #1a0000;
+            color: #ff0000;
+            border-top: 2px solid #ff0000;
+        }
+
+        .tab:hover {
+            background: #150000;
+        }
+
+        .tab-close {
+            margin-left: 8px;
+            color: #ff0000;
+            font-weight: bold;
+        }
+        .tab-close:hover {
+            color: #fff;
         }
 
         input { 
@@ -34,45 +77,205 @@
         }
         .pulse-btn:hover::after { width: 300%; height: 300%; }
 
-        iframe { width: 100vw; height: calc(100vh - 65px); border: none; }
+        #iframe-container {
+            width: 100vw;
+            height: calc(100vh - 105px);
+        }
+
+        iframe { 
+            width: 100%; 
+            height: 100%; 
+            border: none; 
+            display: none; 
+        }
+        iframe.active {
+            display: block;
+        }
     </style>
 </head>
 <body>
+
+<div id="tab-container"></div>
 
 <div id="controls">
     <button class="pulse-btn" onclick="goHome()">HOME</button>
     <input type="text" id="urlInput" placeholder="Enter URL or Search Query...">
     <button class="pulse-btn" onclick="processInput()">GO</button>
+    <button class="pulse-btn" onclick="createTab()">+ NEW</button>
 </div>
 
-<iframe id="browser-view" src="https://notpulsewave.github.io/minecraft"></iframe>
+<div id="iframe-container"></div>
 
 <script>
-    const iframe = document.getElementById('browser-view');
+    const tabContainer = document.getElementById('tab-container');
+    const iframeContainer = document.getElementById('iframe-container');
     const input = document.getElementById('urlInput');
+    let tabs = [];
+    let activeTabId = null;
+    let tabCounter = 0;
 
-    function goHome() {
-        iframe.src = "https://notpulsewave.github.io/minecraft";
-        input.value = "";
+    // --- SESSION MANAGEMENT ---
+
+    // 1. Ask to restore tabs on load
+    window.onload = () => {
+        const savedSession = localStorage.getItem('breachBrowserTabs');
+        if (savedSession) {
+            if (confirm("Restore tabs from previous session?")) {
+                restoreTabs(JSON.parse(savedSession));
+                return;
+            } else {
+                localStorage.removeItem('breachBrowserTabs');
+            }
+        }
+        // If no session or user cancelled, create default tab
+        if (tabs.length === 0) createTab();
+    };
+
+    // 2. Save tabs before unload
+    window.addEventListener('beforeunload', () => {
+        saveTabs();
+    });
+
+    function saveTabs() {
+        const sessionData = tabs.map(t => ({
+            id: t.id,
+            url: t.element.src,
+            title: t.title,
+            isActive: t.id === activeTabId
+        }));
+        localStorage.setItem('breachBrowserTabs', JSON.stringify(sessionData));
     }
 
-    function processInput() {
-        let val = input.value.trim();
-        if (!val) return;
-        
-        // If it looks like a URL (contains a dot and no spaces, or starts with http), go to it.
-        // Otherwise, send the query to Bing.
-        const isUrl = (val.includes('.') && !val.includes(' ')) || val.startsWith('http');
-        
-        if (isUrl) {
-            if (!val.startsWith('http')) val = 'https://' + val;
-            iframe.src = val;
-        } else {
-            iframe.src = `https://www.bing.com/search?q=${encodeURIComponent(val)}`;
+    function restoreTabs(sessionData) {
+        // Reset state
+        tabContainer.innerHTML = '';
+        iframeContainer.innerHTML = '';
+        tabs = [];
+        activeTabId = null;
+        tabCounter = sessionData.length; // Sync counter so IDs don't clash if we add new ones later
+
+        sessionData.forEach(item => {
+            const tabId = `tab-${item.id}`;
+            
+            // Create Tab Element
+            const tabBtn = document.createElement('div');
+            tabBtn.className = 'tab';
+            if (item.isActive) tabBtn.classList.add('active');
+            tabBtn.id = `tab-btn-${tabId}`;
+            tabBtn.innerHTML = `<span class="tab-title">${item.title || 'Tab'}</span> <span class="tab-close" onclick="closeTab('${tabId}', event)">×</span>`;
+            tabBtn.onclick = (e) => switchTab(tabId);
+            tabContainer.appendChild(tabBtn);
+
+            // Create Iframe
+            const iframe = document.createElement('iframe');
+            iframe.id = tabId;
+            iframe.src = item.url;
+            if (item.isActive) iframe.classList.add('active');
+            iframeContainer.appendChild(iframe);
+
+            tabs.push({ id: tabId, element: iframe, btnElement: tabBtn, title: item.title || 'Tab' });
+            if (item.isActive) activeTabId = tabId;
+        });
+
+        if (!activeTabId && tabs.length > 0) {
+            switchTab(tabs[0].id);
         }
     }
 
-    // Allow Enter key to trigger search/navigation
+    // --- TAB LOGIC ---
+
+    function createTab() {
+        tabCounter++;
+        const tabId = `tab-${tabCounter}`;
+        
+        const tabBtn = document.createElement('div');
+        tabBtn.className = 'tab';
+        tabBtn.id = `tab-btn-${tabId}`;
+        tabBtn.innerHTML = `<span class="tab-title">New Tab</span> <span class="tab-close" onclick="closeTab('${tabId}', event)">×</span>`;
+        tabBtn.onclick = (e) => switchTab(tabId);
+        tabContainer.appendChild(tabBtn);
+
+        const iframe = document.createElement('iframe');
+        iframe.id = tabId;
+        iframe.src = "https://notpulsewave.github.io/minecraft";
+        iframe.className = 'active';
+        iframeContainer.appendChild(iframe);
+
+        tabs.push({ id: tabId, element: iframe, btnElement: tabBtn, title: 'New Tab' });
+        switchTab(tabId);
+    }
+
+    function switchTab(tabId) {
+        document.querySelectorAll('iframe').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+
+        const tabData = tabs.find(t => t.id === tabId);
+        if (tabData) {
+            tabData.element.classList.add('active');
+            tabData.btnElement.classList.add('active');
+            activeTabId = tabId;
+            input.value = "";
+        }
+    }
+
+    function closeTab(tabId, event) {
+        event.stopPropagation();
+        const tabIndex = tabs.findIndex(t => t.id === tabId);
+        if (tabIndex === -1) return;
+
+        tabs[tabIndex].element.remove();
+        tabs[tabIndex].btnElement.remove();
+        tabs.splice(tabIndex, 1);
+
+        if (activeTabId === tabId) {
+            if (tabs.length > 0) {
+                switchTab(tabs[tabs.length - 1].id);
+            } else {
+                createTab();
+            }
+        }
+        // Save state immediately on close so next time it's accurate
+        saveTabs(); 
+    }
+
+    function goHome() {
+        if (!activeTabId) return;
+        const iframe = document.getElementById(activeTabId);
+        iframe.src = "https://notpulsewave.github.io/minecraft";
+        updateTabTitle(activeTabId, "New Tab");
+        input.value = "";
+        saveTabs();
+    }
+
+    function processInput() {
+        if (!activeTabId) return;
+        let val = input.value.trim();
+        if (!val) return;
+        
+        const iframe = document.getElementById(activeTabId);
+        const isUrl = (val.includes('.') && !val.includes(' ')) || val.startsWith('http');
+        let targetUrl = val;
+        
+        if (isUrl) {
+            if (!val.startsWith('http')) val = 'https://' + val;
+            targetUrl = val;
+        } else {
+            targetUrl = `https://www.bing.com/search?q=${encodeURIComponent(val)}`;
+        }
+        
+        iframe.src = targetUrl;
+        updateTabTitle(activeTabId, val.length > 20 ? val.substring(0, 20) + '...' : val);
+        saveTabs();
+    }
+
+    function updateTabTitle(tabId, title) {
+        const tabData = tabs.find(t => t.id === tabId);
+        if (tabData) {
+            tabData.btnElement.querySelector('.tab-title').textContent = title;
+            tabData.title = title; // Update object data too
+        }
+    }
+
     input.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') processInput();
     });
