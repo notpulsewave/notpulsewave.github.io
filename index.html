@@ -14,9 +14,7 @@
       --accent-dark: #cc0000;
       --shadow: rgba(255, 0, 0, 0.2);
     }
-
     * { box-sizing: border-box; }
-
     body {
       margin: 0;
       min-height: 100vh;
@@ -29,26 +27,38 @@
       padding: 20px;
       overflow: hidden;
     }
-
     .container {
       width: 100%;
-      max-width: 920px;
+      max-width: 1400px;
       border-radius: 20px;
       overflow: hidden;
       background: rgba(10, 10, 10, 0.95);
       border: 1px solid rgba(255, 0, 0, 0.2);
       box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8);
+      display: flex;
+      flex-direction: row;
+      min-height: 85vh;
     }
 
     .topbar {
       height: 6px;
       background: linear-gradient(to right, #ff0000, #8b0000);
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
     }
 
-    .hero {
-      padding: 60px 40px 50px;
+    /* Left Side - Hero Content */
+    .left-side {
+      flex: 1;
+      padding: 60px 50px 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
       text-align: center;
       background: rgba(255, 0, 0, 0.02);
+      border-right: 1px solid rgba(255, 0, 0, 0.15);
     }
 
     .badge {
@@ -63,21 +73,18 @@
       letter-spacing: 1.5px;
       margin-bottom: 20px;
     }
-
     h1 {
       margin: 0 0 10px;
-      font-size: clamp(3rem, 8vw, 5.8rem);
+      font-size: clamp(2.8rem, 7vw, 5.5rem);
       font-weight: 800;
       letter-spacing: -2px;
       line-height: 0.9;
       color: #fff;
       text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
     }
-
     h1 span {
       color: #ff3333;
     }
-
     .subtitle {
       max-width: 520px;
       margin: 0 auto 32px;
@@ -85,7 +92,6 @@
       font-size: 1.05rem;
       line-height: 1.6;
     }
-
     .buttons {
       display: flex;
       flex-wrap: wrap;
@@ -93,6 +99,64 @@
       gap: 12px;
     }
 
+    /* Right Side - AI Panel */
+    .right-side {
+      width: 520px;
+      background: var(--bg-panel);
+      display: flex;
+      flex-direction: column;
+      border-left: 1px solid rgba(255, 0, 0, 0.2);
+    }
+    .ai-header {
+      padding: 16px 30px;
+      background: rgba(255, 0, 0, 0.1);
+      border-bottom: 1px solid rgba(255, 0, 0, 0.2);
+      font-weight: 600;
+      font-size: 1.15rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .ai-header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .ai-header::before {
+      content: "🤖";
+      font-size: 1.5rem;
+    }
+    .help-btn {
+      background: rgba(255, 0, 0, 0.2);
+      color: #ff6666;
+      border: 1px solid rgba(255, 0, 0, 0.4);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .help-btn:hover {
+      background: #ff0000;
+      color: white;
+      transform: translateY(-2px);
+    }
+
+    .ai-content {
+      flex: 1;
+      overflow: hidden;
+    }
+    .ai-content iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+
+    /* Buttons */
     .btn {
       text-decoration: none;
       font-weight: 700;
@@ -106,38 +170,33 @@
       font-size: 0.95rem;
       min-width: 150px;
       position: relative;
-      overflow: hidden; /* Ensures ripple stays inside button */
+      overflow: hidden;
       cursor: pointer;
     }
-
     .btn:hover {
       transform: translateY(-3px);
     }
-
     .primary {
       background: #ff0000;
       color: #ffffff;
       box-shadow: 0 8px 0 #8b0000;
       text-shadow: 0 1px 2px rgba(0,0,0,0.5);
     }
-
     .primary:hover {
       background: #ff1a1a;
     }
-
     .secondary {
       background: #1a0000;
       color: var(--text);
       border: 1px solid rgba(255, 0, 0, 0.3);
       box-shadow: 0 4px 0 #330000;
     }
-
     .secondary:hover {
       background: #2a0000;
       border-color: rgba(255, 0, 0, 0.6);
     }
 
-    /* Ripple Effect Styles */
+    /* Ripple Effect */
     .ripple {
       position: absolute;
       border-radius: 50%;
@@ -146,7 +205,6 @@
       animation: ripple-anim 0.6s linear;
       pointer-events: none;
     }
-
     @keyframes ripple-anim {
       to {
         transform: scale(4);
@@ -161,27 +219,43 @@
       color: rgba(255,255,255,0.4);
       background: rgba(0,0,0,0.5);
       border-top: 1px solid rgba(255,0,0,0.1);
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
     }
-    
     .bottom a {
       color: #ff4d4d;
       text-decoration: none;
     }
+
+    /* Responsive */
+    @media (max-width: 992px) {
+      .container {
+        flex-direction: column;
+        min-height: auto;
+      }
+      .right-side {
+        width: 100%;
+        height: 650px;
+      }
+      .left-side {
+        padding: 50px 30px;
+      }
+    }
   </style>
 </head>
 <body>
-
-  <!-- Main Content (Password Screen Removed) -->
   <main class="container" id="main-content">
     <div class="topbar"></div>
 
-    <section class="hero">
+    <!-- Left Side -->
+    <div class="left-side">
       <div class="badge">MINECRAFT CHANNEL</div>
       <h1><span>PulseWave</span></h1>
       <p class="subtitle">
         Clean Minecraft content — builds, gameplay, and creative moments.
       </p>
-
       <div class="buttons">
         <a class="btn primary" href="https://www.youtube.com/@notpulsewave" target="_blank">Watch on YouTube</a>
         <a class="btn primary" href="minecraft.html">Play Minecraft</a>
@@ -195,39 +269,55 @@
         <a class="btn primary" href="amplerlauncher" target="_blank">Ampler Launcher</a>
         <a class="btn primary" href="https://pulsewave-ai.netlify.app" target="_blank">Pulsewave AI</a>
       </div>
-    </section>
+    </div>
 
-    <div class="bottom">
-      © 2026 PulseWave • <a href="https://www.youtube.com/@notpulsewave" target="_blank">youtube.com/@notpulsewave</a>
+    <!-- Right Side - AI Panel -->
+    <div class="right-side">
+      <div class="ai-header">
+        <div class="ai-header-left">
+          <span>🤖</span>
+          <span>PulseWave AI Assistant</span>
+        </div>
+        <a href="https://notpulsewave.github.io/PulsewaveAssistant" target="_blank" class="help-btn">
+          Open Help Page
+        </a>
+      </div>
+      <div class="ai-content">
+        <iframe
+          src="https://www.chatbase.co/chatbot-iframe/4TF9GnQ753lXOdpbDMtPG"
+          width="100%"
+          height="100%"
+          frameborder="0"
+          allow="microphone"
+        ></iframe>
+      </div>
     </div>
   </main>
+
+  <div class="bottom">
+    © 2026 PulseWave • <a href="https://www.youtube.com/@notpulsewave" target="_blank">youtube.com/@notpulsewave</a>
+  </div>
 
   <script>
     // Ripple Effect Logic
     const buttons = document.querySelectorAll('.btn');
-
     buttons.forEach(btn => {
       btn.addEventListener('mouseenter', function(e) {
-        // Create ripple element
         const ripple = document.createElement('span');
         ripple.classList.add('ripple');
         
-        // Get button dimensions
         const rect = btn.getBoundingClientRect();
         const size = Math.max(rect.width, rect.height);
         
-        // Set size and position to center of button
         ripple.style.width = ripple.style.height = `${size}px`;
         ripple.style.left = `${rect.width / 2 - size / 2}px`;
         ripple.style.top = `${rect.height / 2 - size / 2}px`;
         
-        // Append to button
         btn.appendChild(ripple);
         
-        // Remove ripple after animation ends
         setTimeout(() => {
           ripple.remove();
-        }, 600); // Matches animation duration
+        }, 600);
       });
     });
   </script>
